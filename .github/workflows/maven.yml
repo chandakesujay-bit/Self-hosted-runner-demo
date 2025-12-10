@@ -1,8 +1,8 @@
-name: Simple Maven Build
+name: Maven Build Using Self-Hosted Runner
 
 on:
-  workflow_dispatch:
   push:
+  pull_request:
 
 jobs:
   build:
@@ -18,5 +18,5 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Build with Maven
-        run: mvn -B package
+      - name: Maven Build
+        run: mvn clean package
