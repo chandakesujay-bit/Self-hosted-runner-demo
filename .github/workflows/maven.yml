@@ -18,5 +18,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Maven Build
-        run: mvn clean package
+      - name: Maven Build with Secrets (Practice)
+        env:
+          MAVEN_USER: ${{ secrets.MAVEN_REPO_USER }}
+          MAVEN_PASS: ${{ secrets.MAVEN_REPO_PASS }}
+        run: |
+          echo "Maven user is $MAVEN_USER"
+          mvn clean package
