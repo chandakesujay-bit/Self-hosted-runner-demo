@@ -3,6 +3,13 @@ name: Maven Build Using Self-Hosted Runner
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      build_env:
+        description: "Enter environment (dev / qa / prod)"
+        required: true
+        default: dev
+        type: string
 
 jobs:
   build:
@@ -12,16 +19,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Maven Build with Secrets (Practice)
+      - name: Set Environment Variables (Sir Style)
+        run: |
+          echo "BUILD_ENV=${{ inputs.build_env }}" >> $GITHUB_ENV
+
+      - name: Maven Build with Secrets
         env:
           MAVEN_USER: ${{ secrets.MAVEN_REPO_USER }}
           MAVEN_PASS: ${{ secrets.MAVEN_REPO_PASS }}
         run: |
+          echo "Build Environment is $BUILD_ENV"
           echo "Maven user is $MAVEN_USER"
           mvn clean package
