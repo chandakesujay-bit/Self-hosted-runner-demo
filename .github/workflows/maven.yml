@@ -20,7 +20,7 @@ on:
         default: qa
 
   schedule:
-    - cron: '1 * * * *'
+    - cron: '* * * * *'
 
   push:
     branches:
