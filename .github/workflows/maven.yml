@@ -1,39 +1,69 @@
-name: Maven Build Using Self-Hosted Runner
+name: Variable Usecase Workflow
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
     inputs:
-      build_env:
-        description: "Enter environment (dev / qa / prod)"
+      variable_1:
+        description: 'Accepting input value during manual trigger'
         required: true
-        default: dev
         type: string
+        default: devops_var
+
+      target_env:
+        description: 'Select environment for deployment'
+        required: true
+        type: choice
+        options:
+          - qa
+          - staging
+          - production
+        default: qa
+
+  schedule:
+    - cron: '47 3 * * *'
+
+  push:
+    branches:
+      - master
+      - develop
+
+env:
+  name: Sujay
+  servername: Default
 
 jobs:
-  build:
-    runs-on: self-hosted
+  job1_printing_variable_name:
+    runs-on: ubuntu-latest
+
+    env:
+      os: Linux
 
     steps:
-      - name: Checkout Code
+      - name: Print variables to summary
+        run: |
+          echo "My name is $name" >> $GITHUB_STEP_SUMMARY
+          echo "OS: $os" >> $GITHUB_STEP_SUMMARY
+          echo "Repository: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "Workflow: ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "Triggered by: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "Input variable_1: ${{ github.event.inputs.variable_1 }}" >> $GITHUB_STEP_SUMMARY
+          echo "Target Environment: ${{ github.event.inputs.target_env }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Set Environment Variables (Sir Style)
+      - name: Decide server based on trigger type
         run: |
-          echo "BUILD_ENV=${{ inputs.build_env }}" >> $GITHUB_ENV
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "servername=DR_1" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "servername=Pre_Prod" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "servername=Prod" >> $GITHUB_ENV
+          else
+            echo "servername=$servername" >> $GITHUB_ENV
+          fi
 
-      - name: Maven Build with Secrets
-        env:
-          MAVEN_USER: ${{ secrets.MAVEN_REPO_USER }}
-          MAVEN_PASS: ${{ secrets.MAVEN_REPO_PASS }}
+      - name: Use server name
         run: |
-          echo "Build Environment is $BUILD_ENV"
-          echo "Maven user is $MAVEN_USER"
-          mvn clean package
+          echo "Targeting server: $servername"
