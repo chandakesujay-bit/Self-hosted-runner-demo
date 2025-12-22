@@ -1,0 +1,60 @@
+name: Reusable CI Template
+
+on:
+  workflow_call:
+    # Define inputs that the caller must or can provide
+    inputs:
+      java-version:
+        required: true
+        type: string
+      environment:
+        required: false
+        type: string
+        default: 'staging'
+      distribution:
+        required: false
+        type: string
+        default: 'temurin'
+    
+    outputs:
+      ci_class:
+        description: "The class of the CI template"
+        value: ${{ jobs.build-and-test.outputs.class_output }}
+
+
+jobs:
+  job_1_pre-requsit:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      class_output: ${{ steps.set-class.outputs.class }}
+    
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: 'project-repo'
+          fetch-depth: 0
+        
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: ${{ inputs.distribution }}
+          cache: maven
+          cache-dependency-path: '**/pom.xml'
+          
+      - name: Verify Java Installation
+        run: |
+          echo "Running tests in ${{ inputs.environment }} environment..."  >> $GITHUB_STEP_SUMMARY
+          java -version
+          
+      - name: Set Class Output
+        id: set-class
+        run: echo "class=DevOps_CICD_Template" >> $GITHUB_OUTPUT
+
+
+
+
+
