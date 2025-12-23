@@ -1,13 +1,11 @@
-name: SonarQube Maven Scan
+name: SonarQube Maven Manual Scan
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   sonar:
+    name: SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
@@ -20,17 +18,8 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Cache Maven packages
+      - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-m2-
-
-      - name: Build & SonarQube Scan
-        run: |
-          mvn clean verify sonar:sonar \
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} \
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          key: ${{ runner.os }}-m2-${{ hashFiles('
