@@ -9,13 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Setup Java
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -23,7 +21,6 @@ jobs:
           java-version: '17'
           cache: maven
 
-      # 3. Build & Sonar analysis
       - name: Build & SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -34,6 +31,9 @@ jobs:
             -Dsonar.login=$SONAR_TOKEN \
             -Dsonar.projectVersion=${{ github.run_number }}
 
-      # 4. Quality Gate check (THIS DECIDES PASS / FAIL)
       - name: Sonar Quality Gate Check
-        us
+        uses: SonarSource/sonarqube-quality-gate-action@v1.1.0
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
