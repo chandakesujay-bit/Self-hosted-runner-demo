@@ -3,37 +3,29 @@ name: Build and Analyze (SonarCloud)
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
-    branches:
-      - master
+    branches: [ master ]
 
 jobs:
   sonar:
-    name: SonarCloud Analysis
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Setup Java
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: maven
 
-      # 3. Build project (NO sonar here)
       - name: Build with Maven
         run: mvn clean verify
 
-      # 4. SonarCloud Scan (OFFICIAL ACTION)
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         env:
@@ -42,11 +34,8 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORG }}
-            -Dsonar.host.url=https://sonarcloud.io
 
-      # 5. Quality Gate enforcement (PASS / FAIL)
       - name: SonarCloud Quality Gate Check
         uses: SonarSource/sonarcloud-quality-gate-action@v1
-        timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
